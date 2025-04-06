@@ -2,6 +2,13 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+const char* vertexShaderSource =    "#version 330 core\n"
+                                    "layout (location = 0) in vec3 aPos;\n"
+                                    "void main()\n"
+                                    "{\n"
+                                    " gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+                                    "}\0";
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -21,7 +28,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(1366, 768, "Hello Window Complete", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1366, 768, "Hello Triagle Not Complete", NULL, NULL);
 
     if (!window)
     {
@@ -51,6 +58,41 @@ int main(void)
         // rendering commands here
         glClearColor(0.956f, 0.804f, 0.514f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+		// vertex array object
+        float vertices[] = { -0.5f,-0.5f, 0.0f,
+                              0.5f,-0.5f, 0.0f,
+                              0.0f, 0.5f, 0.0f
+        };
+
+		// vertex buffer object
+        unsigned int VBO;
+        
+		// generate buffer with unique ID
+        glGenBuffers(1, &VBO);
+
+		// bind the buffer to the GL_ARRAY_BUFFER target
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+		// copy the vertex data into the buffer's memory (GL_STATIC_DRAW means it is static but will be used many times)
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        unsigned int vertexShader;
+        vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+		glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+		glCompileShader(vertexShader);
+
+        int success;
+        char infoLog[512];
+        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+
+        if (!success)
+        {
+            glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+            std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" <<
+                infoLog << std::endl;
+        }
 
         // check and call events and swap the buffers
         glfwPollEvents();
